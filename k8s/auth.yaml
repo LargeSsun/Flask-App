@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: auth-server
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: auth-server
@@ -16,6 +17,11 @@ spec:
         image: jaewoozzang/auth_server:v0.7
         ports:
         - containerPort: 5001
+        envFrom:
+        - configMapRef:
+            name: db-config
+        - secretRef:
+            name: db-credentials
 ---
 apiVersion: v1
 kind: Service
@@ -23,6 +29,7 @@ metadata:
   name: auth-server
 spec:
   ports:
-    - port: 5001
+  - port: 5001
+    targetPort: 5001
   selector:
     app: auth-server

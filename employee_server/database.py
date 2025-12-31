@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlmodel import create_engine, Session, select
+from sqlmodel import SQLModel, create_engine, Session, select
 from sqlalchemy.pool import QueuePool
 import config
 from models import Employee # Import the Employee model
@@ -7,7 +7,8 @@ from models import Employee # Import the Employee model
 # Database URL
 DATABASE_URL = (
     f"mysql+mysqlconnector://{config.DATABASE_USER}:{config.DATABASE_PASSWORD}@"
-    f"{config.DATABASE_HOST}/{config.DATABASE_DB_NAME}"
+    f"{config.DATABASE_HOST}:{config.DATABASE_PORT}/"
+    f"{config.DATABASE_DB_NAME}"
 )
 
 # Create the engine with connection pooling
@@ -24,12 +25,17 @@ engine = create_engine(
 )
 
 def create_db_and_tables():
-    """Creates database tables based on SQLModel metadata."""
-    # SQLModel.metadata.create_all(engine)
-    # For MySQL, it's better to manage table creation via SQL scripts
-    # or ensure the table exists before running the app.
-    # This function is mainly for ensuring the engine is set up.
-    pass
+    """
+    Create database tables if they do not exist.
+    Safe to call multiple times.
+    """
+    try:
+        SQLModel.metadata.create_all(engine)
+        print("✅ Database tables created or already exist")
+    except Exception as e:
+        print("❌ Failed to create database tables")
+        print(e)
+        raise
 
 def get_session():
     """Dependency to get a database session."""

@@ -96,7 +96,7 @@ async def on_startup():
     database.create_db_and_tables()
 
 @app.get("/employees", response_model=EmployeesListResponse)
-async def get_employees(current_user: str = Depends(get_current_user)):
+async def get_employees():#current_user: str = Depends(get_current_user)):
     """모든 직원의 목록을 JSON 배열로 반환합니다."""
     start_time = time.time() # 시간 측정 시작
 
@@ -116,7 +116,7 @@ async def get_employees(current_user: str = Depends(get_current_user)):
     return employees_public_data # 목록 직접 반환
 
 @app.get("/employee/{employee_id}", response_model=EmployeePublic, responses={404: {"description": "Employee not found"}})
-async def get_employee(employee_id: int, current_user: str = Depends(get_current_user)):
+async def get_employee(employee_id: int,):# current_user: str = Depends(get_current_user)):
     """단일 직원의 데이터를 JSON으로 반환합니다."""
     employee: Optional[Employee] = database.load_employee(employee_id) # 직원 ID로 직원 로드
     if employee:

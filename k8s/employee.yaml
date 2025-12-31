@@ -13,9 +13,14 @@ spec:
     spec:
       containers:
       - name: employee-server
-        image: jaewoozzang/employee_server:v0.7
+        image: jaewoozzang/employee_server:v0.91
         ports:
         - containerPort: 5002
+        envFrom:
+        - configMapRef:
+            name: db-config
+        - secretRef:
+            name: db-credentials
 ---
 apiVersion: v1
 kind: Service

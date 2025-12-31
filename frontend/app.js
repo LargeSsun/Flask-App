@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let jwtToken = localStorage.getItem('jwtToken');
 
-    const API_BASE_URL = ''; // Gateway is serving static files, so relative path works
+    const API_BASE_URL = 'http://192.168.90.6:30000'
     const DEFAULT_PHOTO_PLACEHOLDER = '/no_photo.png';
 
     // --- Utility Functions ---
