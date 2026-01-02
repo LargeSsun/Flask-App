@@ -5,8 +5,9 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, status
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-# 사진 저장 폴더 (S3를 모방한 로컬 저장소)
-PHOTOS_DIR = "data/photos"
+# 1. 저장 경로를 아예 마운트 경로와 일치시킵니다.
+PHOTOS_DIR = "/app/static/uploads"
+os.makedirs(PHOTOS_DIR, exist_ok=True)
 
 # PHOTOS_DIR이 없으면 생성
 os.makedirs(PHOTOS_DIR, exist_ok=True)
@@ -17,6 +18,9 @@ app = FastAPI()
 # 이 마운트는 /photos/{object_key} 엔드포인트와 충돌하지 않도록 주의해야 합니다.
 # FileResponse를 사용하여 직접 파일을 제공하는 것이 더 유연합니다.
 # app.mount("/photos", StaticFiles(directory=PHOTOS_DIR), name="photos")
+
+# 2. 스태틱 마운트도 동일하게 설정 (이미 되어있다면 확인만)
+app.mount("/static/uploads", StaticFiles(directory=PHOTOS_DIR), name="photos")
 
 @app.post("/upload")
 async def upload_photo(file: UploadFile = File(...)):

@@ -17,7 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let jwtToken = localStorage.getItem('jwtToken');
 
-    const API_BASE_URL = 'http://192.168.90.6:30000'
+    // Nginx가 프록시 처리를 해주므로 BASE_URL은 비워둡니다.
+    const API_BASE_URL = ''; 
     const DEFAULT_PHOTO_PLACEHOLDER = '/no_photo.png';
 
     // --- Utility Functions ---
@@ -67,8 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('employee-id').value = '';
         cancelEditButton.style.display = 'none';
         employeeForm.querySelector('button[type="submit"]').textContent = 'Save Employee';
-        photoPreview.src = DEFAULT_PHOTO_PLACEHOLDER; // Reset photo preview
-        // Uncheck all badges
+        photoPreview.src = DEFAULT_PHOTO_PLACEHOLDER; 
         badgesCheckboxesDiv.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             checkbox.checked = false;
         });
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setAuthUI(false);
     });
 
-    // --- Image Preview ---
+    // --- Image Preview (Client Side) ---
     photoInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.status === 401) {
                 showMessage(employeeMessage, 'Unauthorized. Please log in again.', true);
-                logoutButton.click(); // Force logout
+                logoutButton.click(); 
                 return;
             }
 
@@ -154,8 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 employees.forEach(emp => {
                     const empDiv = document.createElement('div');
                     empDiv.className = 'employee-item';
+                    
+                    // [수정 포인트 1] API_BASE_URL 중복 제거 및 경로 최적화
+                    const displayPhoto = emp.photo_url ? emp.photo_url : DEFAULT_PHOTO_PLACEHOLDER;
+                    
                     empDiv.innerHTML = `
-                        <img src="${emp.photo_url ? API_BASE_URL + emp.photo_url : DEFAULT_PHOTO_PLACEHOLDER}" alt="${emp.full_name}" width="120" height="160">
+                        <img src="${displayPhoto}" alt="${emp.full_name}" width="120" height="160">
                         <div>
                             <h4>${emp.full_name} (${emp.job_title})</h4>
                             <p>Location: ${emp.location}</p>
@@ -193,9 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         document.getElementById('full_name').value = employee.full_name;
                         document.getElementById('location').value = employee.location;
                         document.getElementById('job_title').value = employee.job_title;
-                        // Set photo preview
-                        photoPreview.src = employee.photo_url ? API_BASE_URL + '/static' + employee.photo_url : DEFAULT_PHOTO_PLACEHOLDER;
-                        // Set badges checkboxes
+
+                        // [수정 포인트 2] Edit 시 프리뷰 경로 수정 (/static 중복 제거)
+                        photoPreview.src = employee.photo_url ? employee.photo_url : DEFAULT_PHOTO_PLACEHOLDER;
+
                         badgesCheckboxesDiv.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                             checkbox.checked = employee.badges.includes(checkbox.value);
                         });
@@ -247,7 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const full_name = document.getElementById('full_name').value;
         const location = document.getElementById('location').value;
         const job_title = document.getElementById('job_title').value;
-        // Get selected badges
         const selectedBadges = Array.from(badgesCheckboxesDiv.querySelectorAll('input[type="checkbox"]:checked'))
                                     .map(cb => cb.value)
                                     .join(',');
@@ -258,12 +262,12 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('full_name', full_name);
         formData.append('location', location);
         formData.append('job_title', job_title);
-        formData.append('badges', selectedBadges); // Use selected badges
+        formData.append('badges', selectedBadges); 
         if (photo) formData.append('photo', photo);
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/employee/employee`, {
-                method: 'POST', // POST is used for both create and update with Flask-RESTful pattern
+                method: 'POST', 
                 headers: getAuthHeaders(),
                 body: formData
             });
@@ -293,7 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshEmployeesButton.addEventListener('click', fetchEmployees);
     cancelEditButton.addEventListener('click', resetEmployeeForm);
 
-    // Initial check for token
     if (jwtToken) {
         setAuthUI(true);
     } else {

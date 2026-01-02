@@ -87,7 +87,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 # Flask의 url_for와의 일관성을 위해 이를 에뮬레이트하려고 합니다.
 def get_photo_url_for_fastapi(object_key: str):
     # 게이트웨이가 프록시할 수 있는 상대 URL 반환
-    return f"/uploads/{object_key}"
+    return f"/static/uploads/{object_key}"
 
 
 @app.on_event("startup")
@@ -134,7 +134,7 @@ async def save_employee(
     badges: str = Form(""), # 직원 배지 (선택 사항, 기본값 빈 문자열)
     employee_id: Optional[int] = Form(None), # 직원 ID (선택 사항, 새 직원의 경우 None)
     photo: Optional[UploadFile] = File(None), # 직원 사진 파일 (선택 사항)
-    current_user: str = Depends(get_current_user) # 현재 인증된 사용자
+    # current_user: str = Depends(get_current_user) # 현재 인증된 사용자
 ):
     """직원을 생성하거나 업데이트합니다. multipart/form-data를 처리합니다."""
     # FastAPI는 Form(...)을 통해 필수 필드에 대한 유효성 검사를 처리합니다.
@@ -188,7 +188,7 @@ async def save_employee(
         return new_employee # FastAPI는 모델을 자동으로 JSON으로 변환합니다.
 
 @app.delete("/employee/{employee_id}", responses={404: {"description": "Employee not found"}, 200: {"description": "Employee deleted"}})
-async def delete_employee_route(employee_id: int, current_user: str = Depends(get_current_user)):
+async def delete_employee_route(employee_id: int):#, current_user: str = Depends(get_current_user)):
     """직원과 해당 사진을 삭제합니다."""
     employee: Optional[Employee] = database.load_employee(employee_id) # 직원 ID로 직원 로드
     if not employee:

@@ -1,8 +1,5 @@
-# Nginx 베이스 이미지 사용
 FROM nginx:latest
-
-# 내 로컬의 frontend 파일들을 컨테이너 안으로 복사
+# 1. 소스 복사
 COPY . /var/www/frontend/
-
-# Nginx 실행
-CMD ["nginx", "-g", "daemon off;"]
+# 2. 우리가 만든 설정을 Nginx 기본 설정 위치에 덮어쓰기
+COPY nginx.conf /etc/nginx/conf.d/default.conf
