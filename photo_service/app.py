@@ -15,6 +15,9 @@ os.makedirs(PHOTOS_DIR, exist_ok=True)
 
 app = FastAPI()
 
+# Set up Prometheus instrumentation
+Instrumentator().instrument(app).expose(app)
+
 # 정적 파일 제공 (저장된 사진을 직접 제공)
 # 이 마운트는 /photos/{object_key} 엔드포인트와 충돌하지 않도록 주의해야 합니다.
 # FileResponse를 사용하여 직접 파일을 제공하는 것이 더 유연합니다.
@@ -22,11 +25,6 @@ app = FastAPI()
 
 # 2. 스태틱 마운트도 동일하게 설정 (이미 되어있다면 확인만)
 app.mount("/static/uploads", StaticFiles(directory=PHOTOS_DIR), name="photos")
-
-# 서버 시작 시 프로메테우스 지표 활성화
-@app.on_event("startup")
-async def startup():
-    Instrumentator().instrument(app).expose(app)
 
 @app.post("/upload")
 async def upload_photo(file: UploadFile = File(...)):

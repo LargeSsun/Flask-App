@@ -13,6 +13,9 @@ class LoginRequest(BaseModel):
 
 app = FastAPI()
 
+# Set up Prometheus instrumentation
+Instrumentator().instrument(app).expose(app)
+
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -24,11 +27,6 @@ app.add_middleware(
 
 # In a real application, this secret key should be complex and stored securely.
 SECRET_KEY = 'your-super-secret-key-change-it' # Moved from app.config
-
-# 서버 시작 시 프로메테우스 지표 활성화
-@app.on_event("startup")
-async def startup():
-    Instrumentator().instrument(app).expose(app)
 
 @app.post('/auth/login')
 async def login(user_credentials: LoginRequest):

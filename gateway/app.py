@@ -6,6 +6,9 @@ import httpx # 비동기 HTTP 요청을 위한 라이브러리 (FastAPI의 비�
 
 app = FastAPI() # FastAPI 애플리케이션 인스턴스 생성
 
+# Set up Prometheus instrumentation
+Instrumentator().instrument(app).expose(app)
+
 # CORS 미들웨어 설정
 app.add_middleware(
     CORSMiddleware,
@@ -24,10 +27,6 @@ PHOTO_SERVICE_URL = "http://photo-service:5003" # 새로운 사진 서비스 URL
 # 연결 풀링을 위해 전역 클라이언트 사용
 client = httpx.AsyncClient()
 
-# 서버 시작 시 프로메테우스 지표 활성화
-@app.on_event("startup")
-async def startup():
-    Instrumentator().instrument(app).expose(app)
 
 @app.on_event("shutdown")
 async def shutdown_event():

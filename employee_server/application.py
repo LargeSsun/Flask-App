@@ -28,6 +28,9 @@ from models import Employee, EmployeePublic, EmployeesListResponse # 데이터 �
 
 app = FastAPI() # FastAPI 애플리케이션 인스턴스 생성
 
+# Set up Prometheus instrumentation
+Instrumentator().instrument(app).expose(app)
+
 # CORS 미들웨어 설정
 app.add_middleware(
     CORSMiddleware,
@@ -48,10 +51,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token") # tokenUrl은 Swagger UI�
 # httpx 클라이언트 초기화
 client = httpx.AsyncClient()
 
-# 서버 시작 시 프로메테우스 지표 활성화
-@app.on_event("startup")
-async def startup():
-    Instrumentator().instrument(app).expose(app)
 
 @app.on_event("shutdown")
 async def shutdown_event():
