@@ -36,6 +36,8 @@ metadata:
   name: employee-server
 spec:
   ports:
-    - port: 5002
+  - name: http
+    port: 5002
+    targetPort: 5002
   selector:
     app: employee-server
