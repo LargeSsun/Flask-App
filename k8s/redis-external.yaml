@@ -15,6 +15,7 @@ metadata:
 subsets:
   - addresses:
       - ip: 192.168.90.17
+      - ip: 192.168.90.15
     ports:
       - name: sentinel
         port: 26379

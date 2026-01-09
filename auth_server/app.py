@@ -71,14 +71,14 @@ async def login(req: LoginRequest):
     payload = {
         'user': user.username,
         'id': user.id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
     # 2. Redis(Sentinel)에 세션 저장
     r_session = get_session_redis()
-    # 유저 ID를 키로 저장 (토큰 유효기간과 동일하게 24시간 설정)
-    r_session.setex(f"session:{user.id}", 86400, "active") 
+    # 유저 ID를 키로 저장 (토큰 유효기간과 동일하게 1시간 설정)
+    r_session.setex(f"session:{user.id}", 3600, "active") 
 
     return {'token': token}
 

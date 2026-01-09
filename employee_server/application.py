@@ -56,7 +56,6 @@ async def get_current_user_info(token: str = Depends(oauth2_scheme)):
         # 2. Redis 세션 존재 여부 확인 (Sentinel)
         r_session = get_session_redis() 
         if not r_session.exists(f"session:{user_id}"):
-            # [주의] 이 줄이 if문 안으로 4칸 더 들어가야 합니다.
             raise HTTPException(status_code=401, detail="로그아웃된 세션입니다. 다시 로그인하세요.")
 
         # 3. 유저 정보 유효성 검사
@@ -104,7 +103,7 @@ async def get_employees(user: dict = Depends(get_current_user_info)):
         employees_public_data.append(emp_public)
     
     # 3. Redis에 유저별 결과 저장
-    r.setex(cache_key, 600, json.dumps([e.dict() for e in employees_public_data]))
+    r.setex(cache_key, 300, json.dumps([e.dict() for e in employees_public_data]))
 
     execution_time = (time.time() - start_time) * 1000
     print(f"🐌 DB Query (Cache Miss) for User {user_id}: in {execution_time:.2f} ms")
