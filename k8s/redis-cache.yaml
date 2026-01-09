@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-cache
+spec:
+  serviceName: redis-cache
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-cache
+  template:
+    metadata:
+      labels:
+        app: redis-cache
+    spec:
+      containers:
+      - name: redis
+        image: redis:7
+        # [수정] Redis 시작 명령어에 메모리 정책 설정 추가
+        command: ["redis-server"]
+        args: [
+          "--maxmemory", "256mb",               # 사용할 최대 메모리 제한 (상황에 맞게 조절)
+          "--maxmemory-policy", "allkeys-lru"   # 메모리 꽉 차면 가장 오래된 캐시부터 삭제
+        ]
+        ports:
+        - containerPort: 6379
+        envFrom:
+        - configMapRef:
+            name: redis-config
+        # [수정] 쿠버네티스 리소스 제한 추가
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "300Mi"                     # maxmemory보다 조금 크게 설정 (여유분)
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cache-service
+spec:
+  selector:
+    app: redis-cache
+  ports:
+  - port: 6379

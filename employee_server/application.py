@@ -16,7 +16,7 @@ from common import config   # import common.config 대신
 from common import database # import common.database 대신
 import util 
 from common.models import Employee, EmployeePublic, EmployeesListResponse 
-from common.redis_config import get_redis_master 
+from common.redis_config import get_cache_redis, get_session_redis
 
 app = FastAPI() # FastAPI 애플리케이션 인스턴스 생성
 
@@ -48,15 +48,23 @@ async def get_current_user_info(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        # 1. JWT 토큰 해독
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("user")
         user_id: int = payload.get("id")
-        
-        # [수정 포인트] 아래 if 문이 payload 변수들과 세로 줄이 딱 맞아야 합니다.
+
+        # 2. Redis 세션 존재 여부 확인 (Sentinel)
+        r_session = get_session_redis() 
+        if not r_session.exists(f"session:{user_id}"):
+            # [주의] 이 줄이 if문 안으로 4칸 더 들어가야 합니다.
+            raise HTTPException(status_code=401, detail="로그아웃된 세션입니다. 다시 로그인하세요.")
+
+        # 3. 유저 정보 유효성 검사
         if username is None or user_id is None:
             raise credentials_exception
             
         return {"username": username, "id": user_id}
+        
     except (jwt.ExpiredSignatureError, jwt.PyJWTError):
         raise credentials_exception
 
@@ -72,7 +80,7 @@ async def on_startup():
 async def get_employees(user: dict = Depends(get_current_user_info)):
     """모든 직원의 목록을 JSON 배열로 반환합니다. (Redis 캐싱 적용)"""
     start_time = time.time()
-    r = get_redis_master()
+    r = get_cache_redis()
 
     user_id = user["id"]
     cache_key = f"employees_list_cache:{user_id}"
@@ -106,7 +114,7 @@ async def get_employees(user: dict = Depends(get_current_user_info)):
 async def get_employee(employee_id: int):
     """단일 직원 조회 (Redis 캐싱 적용)"""
     start_time = time.time()
-    r = get_redis_master()
+    r = get_cache_redis()
     cache_key = f"emp_cache:{employee_id}"
 
     # 1. Redis 확인
@@ -141,7 +149,7 @@ async def save_employee(
 ):
 
     user_id = user["id"]
-    r = get_redis_master()
+    r = get_cache_redis()
     user_list_cache = f"employees_list_cache:{user_id}"
 
     key = None
@@ -204,8 +212,8 @@ async def delete_employee_route(employee_id: int, user: dict = Depends(get_curre
         except Exception as e: print(f"Error: {e}")
 
     database.delete_employee(employee_id)
-    
-    r = get_redis_master()
+
+    r = get_cache_redis()
     r.delete(f"emp_cache:{employee_id}")
     r.delete(f"employees_list_cache:{user_id}")
     

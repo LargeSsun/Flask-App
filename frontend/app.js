@@ -161,7 +161,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 기타 함수 (기본 유지) ---
-    function logout() { jwtToken = null; localStorage.removeItem('jwtToken'); setAuthUI(false); }
+  async function logout() {
+    const token = localStorage.getItem('jwtToken');
+    let url = `${API_BASE_URL}/api/auth/logout`;
+    if (token) {
+        try {
+            // 1. 백엔드(Auth Server)에 로그아웃 알림
+            await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+        } catch (error) {
+            console.error("Logout API call failed:", error);
+        }
+    }
+
+    // 2. 클라이언트 상태 정리 (API 호출 성공 여부와 상관없이 수행)
+    jwtToken = null;
+    localStorage.removeItem('jwtToken');
+    setAuthUI(false);
+    alert("로그아웃 되었습니다.");
+    location.reload(); // 페이지 새로고침으로 상태 초기화
+}
+
     function showMessage(el, msg, err) { el.textContent = msg; el.style.color = err ? 'red' : 'green'; }
     function showLoading() { loadingIndicator.style.display = 'block'; }
     function hideLoading() { loadingIndicator.style.display = 'none'; }
