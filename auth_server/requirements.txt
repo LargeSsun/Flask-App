@@ -1,5 +1,9 @@
-fastapi # FastAPI 웹 프레임워크
+fastapi
 prometheus-fastapi-instrumentator
-uvicorn # ASGI 서버
+uvicorn
+sqlmodel
+mysql-connector-python
+cryptography
 PyJWT
-
+passlib[bcrypt]
+redis

@@ -44,7 +44,8 @@ spec:
       serviceAccountName: nginx-sa
       containers:
       - name: nginx
-        image: hyunhojang/frontend:v2.02
+        image: jaewoozzang/frontend:v1.0
+        imagePullPolicy: Always
         resources:
           limits:
             memory: "512Mi"

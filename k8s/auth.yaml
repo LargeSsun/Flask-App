@@ -15,12 +15,15 @@ spec:
       serviceAccountName: auth-sa
       containers:
       - name: auth-server
-        image: hyunhojang/auth_server:v2.02
+        image: jaewoozzang/auth_server:v1.0
+        imagePullPolicy: Always
         ports:
         - containerPort: 5001
         envFrom:
         - configMapRef:
             name: db-config
+        - configMapRef:
+            name: redis-config
         - secretRef:
             name: db-credentials
         resources:

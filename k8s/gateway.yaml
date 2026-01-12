@@ -15,7 +15,7 @@ spec:
       serviceAccountName: gateway-sa
       containers:
       - name: gateway
-        image: hyunhojang/gateway:v2.02
+        image: jaewoozzang/gateway:v1.0
         ports:
         - containerPort: 5000
         resources:

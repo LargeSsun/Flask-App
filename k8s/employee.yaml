@@ -15,12 +15,15 @@ spec:
       serviceAccountName: employee-sa
       containers:
       - name: employee-server
-        image: hyunhojang/employee_server:v2.02
+        image: jaewoozzang/employee_server:v1.0
+        imagePullPolicy: Always
         ports:
         - containerPort: 5002
         envFrom:
         - configMapRef:
             name: db-config
+        - configMapRef:
+            name: redis-config
         - secretRef:
             name: db-credentials
         resources:
